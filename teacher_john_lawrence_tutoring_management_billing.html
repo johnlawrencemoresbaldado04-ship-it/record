@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEACHER JOHN LAWRENCE — Tutoring Management & Billing</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        navy: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#080d1a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Print Styles for Clean PDF / Paper Reports */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 11pt;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .print-container {
+                background: #ffffff !important;
+                box-shadow: none !important;
+                border: 1px solid #cbd5e1 !important;
+                margin-bottom: 1.5rem !important;
+                break-inside: avoid;
+            }
+            .print-container table,
+            .print-container thead,
+            .print-container tbody,
+            .print-container tfoot,
+            .print-container tr,
+            .print-container th,
+            .print-container td {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                border-color: #cbd5e1 !important;
+            }
+            header {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                border-bottom: 2px solid #0f172a !important;
+                padding: 1rem 0 !important;
+            }
+            header h1 {
+                color: #0f172a !important;
+            }
+            header p {
+                color: #475569 !important;
+            }
+        }
+
+        /* Subtle dark scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1120;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-[#080d1a] text-slate-100 font-sans min-h-screen flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
+
+    <!-- Toast Notification Container (Replaces alert()) -->
+    <div id="toast-container" class="no-print fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Custom Confirmation Modal (Replaces confirm()) -->
+    <div id="confirm-modal" class="no-print fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+        <div class="bg-[#111827] rounded-2xl shadow-2xl border border-slate-800 max-w-md w-full p-6 transform transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <h3 id="confirm-title" class="text-lg font-bold text-white">Confirm Action</h3>
+            </div>
+            <p id="confirm-message" class="text-sm text-slate-300 mb-6 leading-relaxed">Are you sure you want to proceed?</p>
+            <div class="flex justify-end gap-3">
+                <button id="confirm-cancel-btn" type="button" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition cursor-pointer">
+                    Cancel
+                </button>
+                <button id="confirm-ok-btn" type="button" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-500 shadow-sm transition cursor-pointer">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Backup & Share Modal (Export / Import JSON) -->
+    <div id="backup-modal" class="no-print fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+        <div class="bg-[#111827] rounded-2xl shadow-2xl border border-slate-800 max-w-lg w-full p-6 transform transition-all space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-400/30 text-indigo-300 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Share / Export &amp; Import Data</h3>
+                </div>
+                <button type="button" onclick="closeBackupModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Since this runs locally without login, you can export your data as a backup JSON file or text string to open on your phone, tablet, or another device!
+            </p>
+
+            <div class="space-y-3">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">1. Export / Copy Backup Data</label>
+                <textarea id="backup-data-textarea" rows="4" readonly class="w-full rounded-xl bg-[#070b14] text-indigo-200 font-mono text-xs p-3.5 border border-slate-800 focus:outline-none"></textarea>
+                <div class="flex gap-2">
+                    <button type="button" onclick="copyBackupData()" class="flex-1 py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition cursor-pointer">
+                        Copy Backup Code
+                    </button>
+                    <button type="button" onclick="downloadBackupFile()" class="flex-1 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-sm transition cursor-pointer">
+                        Download JSON File
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-3 pt-3 border-t border-slate-800">
+                <label for="import-data-textarea" class="block text-xs font-bold uppercase tracking-wider text-slate-400">2. Import Backup Data (Paste JSON here)</label>
+                <textarea id="import-data-textarea" rows="3" placeholder="Paste backup JSON code here to sync on this device..." class="w-full rounded-xl bg-[#0b1120] text-white font-mono text-xs p-3.5 border border-slate-700 focus:border-indigo-500 focus:outline-none"></textarea>
+                <button type="button" onclick="importBackupData()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm transition cursor-pointer">
+                    Load / Sync Data on This Device
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header & Primary Navigation -->
+    <header class="bg-gradient-to-b from-[#131b36] to-[#0d1326] border-b border-slate-800/80 text-white shadow-xl sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-11 h-11 rounded-2xl bg-indigo-500/15 border border-indigo-400/25 flex items-center justify-center text-indigo-300 shadow-inner shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-lg sm:text-2xl font-extrabold tracking-tight text-white">TEACHER JOHN LAWRENCE</h1>
+                        <p class="text-xs sm:text-sm text-indigo-200/80 font-medium">Tutoring Management, Attendance &amp; Billing System</p>
+                    </div>
+                </div>
+                <div class="no-print flex items-center gap-2.5 self-start sm:self-center">
+                    <button type="button" onclick="openBackupModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 text-xs font-bold transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                        <span>Share / Export</span>
+                    </button>
+                    <div class="flex items-center gap-2 bg-[#141d38] px-3.5 py-2 rounded-full border border-slate-700/70">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="header-today-badge" class="text-xs font-medium text-slate-200">Loading date...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Navigation Tabs -->
+            <nav class="no-print grid grid-cols-4 gap-1.5 sm:gap-2 bg-[#090e1d] p-1.5 rounded-2xl border border-slate-800/90" role="tablist">
+                <button type="button" onclick="switchTab('book')" id="tab-btn-book" class="nav-tab active flex items-center justify-center gap-2 py-2.5 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 bg-[#182038] text-white border border-slate-700/80 shadow-sm cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Book</span>
+                </button>
+                <button type="button" onclick="switchTab('overview')" id="tab-btn-overview" class="nav-tab flex items-center justify-center gap-2 py-2.5 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Overview</span>
+                </button>
+                <button type="button" onclick="switchTab('individual')" id="tab-btn-individual" class="nav-tab flex items-center justify-center gap-2 py-2.5 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Individual</span>
+                </button>
+                <button type="button" onclick="switchTab('students')" id="tab-btn-students" class="nav-tab flex items-center justify-center gap-2 py-2.5 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span>Students</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+        <!-- ========================================================= -->
+        <!-- TAB 1: BOOK / ADD SESSION                                 -->
+        <!-- ========================================================= -->
+        <section id="tab-book" class="tab-panel space-y-6">
+            <!-- Today Banner -->
+            <div class="bg-[#111827] rounded-2xl p-5 sm:p-6 shadow-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/15 border border-indigo-400/20 px-2.5 py-1 rounded-lg mb-2">
+                        Daily Class Booking
+                    </span>
+                    <h2 class="text-lg sm:text-xl font-bold text-white">
+                        Today is: <span id="book-today-display" class="text-indigo-400">Wednesday, November 18, 2026</span>
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Booking automatically adds +1 to the student's session count.</p>
+                </div>
+                <div class="flex flex-col sm:items-end gap-1.5">
+                    <label for="book-date-input" class="text-xs font-semibold text-slate-400">Session Date (Editable):</label>
+                    <input type="date" id="book-date-input" class="px-3.5 py-2 rounded-xl border border-slate-700 text-sm font-medium text-white bg-[#0b1120] focus:bg-[#0f172a] focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition [color-scheme:dark]">
+                </div>
+            </div>
+
+            <!-- Booking Form Card -->
+            <form id="booking-form" class="bg-[#111827] rounded-2xl p-5 sm:p-8 shadow-lg border border-slate-800 space-y-6">
+                
+                <!-- 1. Select Student -->
+                <div>
+                    <label for="book-student-select" class="block text-sm font-bold text-slate-200 mb-2">
+                        1. Select Student
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center">
+                        <div class="md:col-span-6 relative">
+                            <select id="book-student-select" required class="w-full appearance-none rounded-xl border border-slate-700 bg-[#0b1120] px-4 py-3.5 pr-10 text-base font-bold text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition cursor-pointer">
+                                <!-- Populated via JS -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                        </div>
+                        <div id="book-session-preview-badge" class="md:col-span-6 bg-[#161f38] border border-indigo-500/30 rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                            <div>
+                                <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Previous / Current</p>
+                                <p id="preview-current-session" class="text-sm sm:text-base font-bold text-slate-200">Current: 23rd session</p>
+                            </div>
+                            <div class="text-indigo-400 shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">Will be recorded as</p>
+                                <p id="preview-next-session" class="text-sm sm:text-base font-extrabold text-emerald-400">24th session</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Number of Hours -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-200 mb-2">
+                        2. Number of Hours
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="hours-selector-group">
+                        <button type="button" data-hours="1" class="hour-btn active py-3 px-4 rounded-xl border-2 border-indigo-500 bg-indigo-500/15 text-white font-bold text-sm transition flex flex-col items-center justify-center gap-0.5 cursor-pointer">
+                            <span>1 hour</span>
+                            <span class="text-[11px] font-medium text-indigo-300">(1hr)</span>
+                        </button>
+                        <button type="button" data-hours="1.5" class="hour-btn py-3 px-4 rounded-xl border border-slate-700 bg-[#0b1120] hover:bg-slate-800/80 text-slate-300 font-semibold text-sm transition flex flex-col items-center justify-center gap-0.5 cursor-pointer">
+                            <span>1.5 hours</span>
+                            <span class="text-[11px] font-normal text-slate-500">(1.5hrs)</span>
+                        </button>
+                        <button type="button" data-hours="2" class="hour-btn py-3 px-4 rounded-xl border border-slate-700 bg-[#0b1120] hover:bg-slate-800/80 text-slate-300 font-semibold text-sm transition flex flex-col items-center justify-center gap-0.5 cursor-pointer">
+                            <span>2 hours</span>
+                            <span class="text-[11px] font-normal text-slate-500">(2hrs)</span>
+                        </button>
+                        <button type="button" data-hours="3" class="hour-btn py-3 px-4 rounded-xl border border-slate-700 bg-[#0b1120] hover:bg-slate-800/80 text-slate-300 font-semibold text-sm transition flex flex-col items-center justify-center gap-0.5 cursor-pointer">
+                            <span>3 hours</span>
+                            <span class="text-[11px] font-normal text-slate-500">(3hrs)</span>
+                        </button>
+                    </div>
+                    <input type="hidden" id="book-hours-input" value="1">
+                </div>
+
+                <!-- 3. Payment Status & 4. Price (₱) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <!-- Payment Status -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-200 mb-2">
+                            3. Payment Status
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" id="status-btn-paid" onclick="selectPaymentStatus('Paid')" class="py-3.5 px-4 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 font-bold text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                                Paid
+                            </button>
+                            <button type="button" id="status-btn-unpaid" onclick="selectPaymentStatus('Unpaid')" class="py-3.5 px-4 rounded-xl border border-slate-700 bg-[#0b1120] hover:bg-slate-800/80 text-slate-400 font-semibold text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                Unpaid
+                            </button>
+                        </div>
+                        <input type="hidden" id="book-status-input" value="Paid">
+                    </div>
+
+                    <!-- Price (₱) -->
+                    <div>
+                        <label for="book-price-input" class="block text-sm font-bold text-slate-200 mb-2">
+                            4. Price (₱)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 font-bold text-base">₱</span>
+                            <input type="number" id="book-price-input" min="0" step="1" value="100" required placeholder="100" class="w-full rounded-xl border border-slate-700 bg-[#0b1120] pl-9 pr-4 py-3 text-base font-bold text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition">
+                        </div>
+                        <div class="flex gap-2 mt-2.5">
+                            <button type="button" onclick="setQuickPrice(100)" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer">₱100</button>
+                            <button type="button" onclick="setQuickPrice(150)" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer">₱150</button>
+                            <button type="button" onclick="setQuickPrice(200)" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer">₱200</button>
+                            <button type="button" onclick="setQuickPrice(300)" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer">₱300</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-4 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-extrabold text-base sm:text-lg shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2.5 transition-all cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                        <span id="book-submit-label">Book Now (+1 Session)</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Recent Bookings Quick Feed -->
+            <div class="bg-[#111827] rounded-2xl p-5 sm:p-6 shadow-lg border border-slate-800">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Latest Recorded Sessions</h3>
+                    <button type="button" onclick="switchTab('overview')" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 cursor-pointer">View Full Overview &rarr;</button>
+                </div>
+                <div id="recent-bookings-list" class="divide-y divide-slate-800">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: OVERVIEW (WEEKLY TABLES & PRINT)                   -->
+        <!-- ========================================================= -->
+        <section id="tab-overview" class="tab-panel hidden space-y-6">
+            <!-- Top Bar with Summary Stats & Print Now Button -->
+            <div class="bg-[#111827] rounded-2xl p-5 sm:p-6 shadow-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-white">Weekly Sessions &amp; Earnings Overview</h2>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Grouped automatically by week. Click any status badge to toggle Paid/Unpaid.</p>
+                </div>
+                <div class="no-print flex flex-wrap items-center gap-2.5">
+                    <select id="overview-week-filter" onchange="renderOverview()" class="rounded-xl border border-slate-700 bg-[#0b1120] px-3.5 py-2.5 text-sm font-semibold text-white focus:border-indigo-500 outline-none cursor-pointer">
+                        <option value="all">All Weeks</option>
+                    </select>
+                    <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1e293b] hover:bg-slate-700 border border-slate-700 text-white text-sm font-bold shadow-sm transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        <span>Print Now</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overall Grand Totals Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-[#111827] rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-lg">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Collected (Paid)</p>
+                    <p id="overview-total-paid" class="text-2xl font-extrabold text-emerald-400 mt-1.5">₱0</p>
+                </div>
+                <div class="bg-[#111827] rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-lg">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending Balance (Unpaid)</p>
+                    <p id="overview-total-unpaid" class="text-2xl font-extrabold text-rose-400 mt-1.5">₱0</p>
+                </div>
+                <div class="bg-[#111827] rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-lg">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Overall Billed Total</p>
+                    <p id="overview-total-all" class="text-2xl font-extrabold text-white mt-1.5">₱0</p>
+                </div>
+            </div>
+
+            <!-- Weekly Tables Container -->
+            <div id="weekly-tables-container" class="space-y-6">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 3: INDIVIDUAL SLIPS (ATTENDANCE & COPY FORMAT)        -->
+        <!-- ========================================================= -->
+        <section id="tab-individual" class="tab-panel hidden space-y-6">
+            <div class="bg-[#111827] rounded-2xl p-5 sm:p-8 shadow-lg border border-slate-800 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-bold text-white">Individual Student Attendance Slip</h2>
+                        <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Select a student to generate their formatted Messenger / SMS report.</p>
+                    </div>
+                </div>
+
+                <!-- Student Selector & Filter Controls -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="slip-student-select" class="block text-sm font-bold text-slate-200 mb-2">
+                            Select Student Slip
+                        </label>
+                        <div class="relative">
+                            <select id="slip-student-select" onchange="renderIndividualSlip()" class="w-full appearance-none rounded-xl border border-slate-700 bg-[#0b1120] px-4 py-3 pr-10 text-base font-bold text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition cursor-pointer">
+                                <!-- Populated via JS -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="slip-range-select" class="block text-sm font-bold text-slate-200 mb-2">
+                            Sessions to Include
+                        </label>
+                        <div class="relative">
+                            <select id="slip-range-select" onchange="renderIndividualSlip()" class="w-full appearance-none rounded-xl border border-slate-700 bg-[#0b1120] px-4 py-3 pr-10 text-sm font-semibold text-slate-200 focus:border-indigo-500 outline-none transition cursor-pointer">
+                                <option value="latest_week">Latest Week / Current Cycle</option>
+                                <option value="all">All Recorded Sessions</option>
+                                <option value="latest_single">Latest Single Session Only</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slip Preview Box -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Slip Preview Box (Messenger / SMS Ready)</span>
+                        <span id="slip-session-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-400/20 text-indigo-300">Permanent Student</span>
+                    </div>
+                    
+                    <div class="relative group">
+                        <textarea id="slip-preview-textarea" readonly rows="13" class="w-full rounded-2xl bg-[#070b14] text-slate-100 font-mono text-sm sm:text-[15px] leading-relaxed p-5 sm:p-6 border border-slate-800 shadow-inner focus:outline-none resize-y"></textarea>
+                    </div>
+                </div>
+
+                <!-- Copy to Clipboard Action Button -->
+                <div class="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                    <button type="button" id="copy-slip-btn" onclick="copySlipToClipboard()" class="w-full sm:w-auto flex-1 py-3.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-bold text-base shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2.5 transition cursor-pointer">
+                        <svg id="copy-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                        <span id="copy-btn-text">Copy to Clipboard</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 4: STUDENTS MANAGEMENT                                -->
+        <!-- ========================================================= -->
+        <section id="tab-students" class="tab-panel hidden space-y-6">
+            <!-- Add New Student Card -->
+            <div class="bg-[#111827] rounded-2xl p-5 sm:p-6 shadow-lg border border-slate-800">
+                <h2 class="text-lg sm:text-xl font-bold text-white mb-1">Add New Student</h2>
+                <p class="text-xs sm:text-sm text-slate-400 mb-4">Add a student to your roster and set their current session count (e.g., 23 so the next booking becomes 24th).</p>
+                
+                <form id="add-student-form" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                    <div class="sm:col-span-5">
+                        <label for="new-student-name" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Student Name</label>
+                        <input type="text" id="new-student-name" required placeholder="e.g., Sophia" class="w-full rounded-xl border border-slate-700 bg-[#0b1120] px-4 py-3 text-sm font-semibold text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition">
+                    </div>
+                    <div class="sm:col-span-3">
+                        <label for="new-student-sessions" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Current Session #</label>
+                        <input type="number" id="new-student-sessions" min="0" value="0" required class="w-full rounded-xl border border-slate-700 bg-[#0b1120] px-4 py-3 text-sm font-semibold text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 outline-none transition">
+                    </div>
+                    <div class="sm:col-span-4">
+                        <button type="submit" class="w-full py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            <span>Add Student</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Student List Table -->
+            <div class="bg-[#111827] rounded-2xl shadow-lg border border-slate-800 overflow-hidden">
+                <div class="px-5 sm:px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white">Enrolled Students Roster</h3>
+                        <p class="text-xs text-slate-400">Adjust current session counts anytime or remove students from the list.</p>
+                    </div>
+                    <span id="total-students-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-400/20 text-indigo-300">5 Students</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-[#0b1120] border-b border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-400">
+                                <th class="py-3.5 px-5 sm:px-6">Student Name</th>
+                                <th class="py-3.5 px-4">Status</th>
+                                <th class="py-3.5 px-4">Current Session</th>
+                                <th class="py-3.5 px-5 sm:px-6 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body" class="divide-y divide-slate-800/80 text-sm">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="no-print border-t border-slate-800/80 bg-[#080d1a] py-4 px-4 sm:px-6 mt-auto">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+            <p>&copy; 2026 <strong class="text-slate-300">TEACHER JOHN LAWRENCE</strong> — Tutoring Management System</p>
+            <div class="flex items-center gap-4">
+                <button type="button" onclick="openBackupModal()" class="text-indigo-400 hover:text-indigo-300 underline transition cursor-pointer">Share / Backup Data</button>
+                <span>&bull;</span>
+                <button type="button" onclick="confirmResetDemoData()" class="text-slate-400 hover:text-rose-400 underline transition cursor-pointer">Reset Sample Data</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        // =========================================================================
+        // 1. STATE & STORAGE KEYS
+        // =========================================================================
+        const STORAGE_KEY_STUDENTS = 'tjl_tutoring_students_v2';
+        const STORAGE_KEY_SESSIONS = 'tjl_tutoring_sessions_v2';
+
+        // Default Pre-populated Data (CK starts at 23rd session so next booking is 24th)
+        const DEFAULT_STUDENTS = [
+            { id: 'stu-ck', name: 'CK', currentSession: 23, status: '✅Permanent' },
+            { id: 'stu-darlin', name: 'Darlin', currentSession: 14, status: '✅Permanent' },
+            { id: 'stu-daniel', name: 'Daniel', currentSession: 8, status: '✅Permanent' },
+            { id: 'stu-james', name: 'James', currentSession: 1, status: '✅Permanent' },
+            { id: 'stu-king', name: 'King', currentSession: 5, status: '✅Permanent' }
+        ];
+
+        const DEFAULT_SESSIONS = [
+            {
+                id: 'ses-1',
+                studentId: 'stu-ck',
+                studentName: 'CK',
+                date: '2026-11-17',
+                hours: 1,
+                price: 100,
+                status: 'Paid',
+                sessionNumber: 23
+            },
+            {
+                id: 'ses-2',
+                studentId: 'stu-james',
+                studentName: 'James',
+                date: '2026-11-15',
+                hours: 1,
+                price: 100,
+                status: 'Paid',
+                sessionNumber: 1
+            },
+            {
+                id: 'ses-3',
+                studentId: 'stu-darlin',
+                studentName: 'Darlin',
+                date: '2026-11-15',
+                hours: 2,
+                price: 200,
+                status: 'Unpaid',
+                sessionNumber: 14
+            },
+            {
+                id: 'ses-4',
+                studentId: 'stu-daniel',
+                studentName: 'Daniel',
+                date: '2026-11-16',
+                hours: 1,
+                price: 100,
+                status: 'Paid',
+                sessionNumber: 8
+            },
+            {
+                id: 'ses-5',
+                studentId: 'stu-king',
+                studentName: 'King',
+                date: '2026-11-17',
+                hours: 1,
+                price: 100,
+                status: 'Unpaid',
+                sessionNumber: 5
+            }
+        ];
+
+        let students = [];
+        let sessions = [];
+
+        // =========================================================================
+        // 2. INITIALIZATION & LOCAL STORAGE
+        // =========================================================================
+        function loadData() {
+            try {
+                const storedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
+                const storedSessions = localStorage.getItem(STORAGE_KEY_SESSIONS);
+
+                if (storedStudents) {
+                    students = JSON.parse(storedStudents).map(s => ({
+                        ...s,
+                        currentSession: Number(s.currentSession ?? s.sessionCount ?? 0)
+                    }));
+                } else {
+                    students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+                    saveStudents();
+                }
+
+                if (storedSessions) {
+                    sessions = JSON.parse(storedSessions);
+                } else {
+                    sessions = JSON.parse(JSON.stringify(DEFAULT_SESSIONS));
+                    saveSessions();
+                }
+            } catch (e) {
+                console.error('Error loading from localStorage:', e);
+                students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+                sessions = JSON.parse(JSON.stringify(DEFAULT_SESSIONS));
+            }
+        }
+
+        function saveStudents() {
+            try {
+                localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+            } catch (e) {
+                console.error('Error saving students:', e);
+            }
+        }
+
+        function saveSessions() {
+            try {
+                localStorage.setItem(STORAGE_KEY_SESSIONS, JSON.stringify(sessions));
+            } catch (e) {
+                console.error('Error saving sessions:', e);
+            }
+        }
+
+        // =========================================================================
+        // 3. DATE & FORMATTING UTILITIES
+        // =========================================================================
+        function getOrdinal(n) {
+            const num = parseInt(n, 10);
+            if (isNaN(num)) return n;
+            const s = ["th", "st", "nd", "rd"];
+            const v = num % 100;
+            return num + (s[(v - 20) % 10] || s[v] || s[0]);
+        }
+
+        function getTodayISO() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatFullDate(dateObj) {
+            return dateObj.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function formatShortSlipDate(isoStr) {
+            if (!isoStr) return '';
+            const [y, m, d] = isoStr.split('-').map(Number);
+            const date = new Date(y, m - 1, d);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        function formatMonthDayOnly(isoStr) {
+            if (!isoStr) return '';
+            const [y, m, d] = isoStr.split('-').map(Number);
+            const date = new Date(y, m - 1, d);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function formatHoursLabel(hrs) {
+            const num = parseFloat(hrs);
+            return num === 1 ? '1hr' : `${num}hrs`;
+        }
+
+        function formatCurrency(amount) {
+            return '₱' + Number(amount || 0).toLocaleString('en-PH');
+        }
+
+        function getWeekInfo(isoStr) {
+            const [y, m, d] = isoStr.split('-').map(Number);
+            const date = new Date(y, m - 1, d);
+            const dayOfWeek = date.getDay();
+            const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            
+            const monday = new Date(date);
+            monday.setDate(date.getDate() + diffToMonday);
+            
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+
+            const key = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+            return { key, monday, sunday };
+        }
+
+        function formatWeekRangeTitle(weekSessions, weekInfo) {
+            if (!weekSessions || weekSessions.length === 0) return '';
+            const sortedDates = weekSessions.map(s => s.date).sort();
+            const firstIso = sortedDates[0];
+            const lastIso = sortedDates[sortedDates.length - 1];
+
+            const [y1, m1, d1] = firstIso.split('-').map(Number);
+            const [y2, m2, d2] = lastIso.split('-').map(Number);
+            const startDate = new Date(y1, m1 - 1, d1);
+            const endDate = new Date(y2, m2 - 1, d2);
+
+            const startMonth = startDate.toLocaleDateString('en-US', { month: 'long' });
+            const endMonth = endDate.toLocaleDateString('en-US', { month: 'long' });
+
+            if (firstIso === lastIso) {
+                return `${startMonth} ${d1}, ${y1}`;
+            }
+            if (y1 === y2 && m1 === m2) {
+                return `${startMonth} ${d1}–${d2}, ${y1}`;
+            }
+            if (y1 === y2) {
+                return `${startMonth} ${d1} – ${endMonth} ${d2}, ${y1}`;
+            }
+            return `${startMonth} ${d1}, ${y1} – ${endMonth} ${d2}, ${y2}`;
+        }
+
+        // =========================================================================
+        // 4. UI HELPERS (TABS, TOASTS, MODALS)
+        // =========================================================================
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('bg-[#182038]', 'text-white', 'border', 'border-slate-700/80', 'shadow-sm');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-white/5');
+            });
+
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-white/5');
+                activeBtn.classList.add('bg-[#182038]', 'text-white', 'border', 'border-slate-700/80', 'shadow-sm');
+            }
+
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.add('hidden');
+            });
+            const activePanel = document.getElementById(`tab-${tabName}`);
+            if (activePanel) {
+                activePanel.classList.remove('hidden');
+            }
+
+            if (tabName === 'book') renderBookingTab();
+            if (tabName === 'overview') renderOverview();
+            if (tabName === 'individual') renderIndividualSlip();
+            if (tabName === 'students') renderStudentsTable();
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const colors = type === 'success' 
+                ? 'bg-[#111827] text-white border-emerald-500/50' 
+                : 'bg-rose-950 text-white border-rose-500/50';
+            
+            const icon = type === 'success'
+                ? `<span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">✓</span>`
+                : `<span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">!</span>`;
+
+            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3.5 rounded-xl border shadow-2xl text-sm font-medium transform transition-all duration-300 translate-y-2 opacity-0 ${colors}`;
+            toast.innerHTML = `${icon}<span class="flex-1">${message}</span>`;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        function showConfirmModal(title, message, onConfirm) {
+            const modal = document.getElementById('confirm-modal');
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+
+            const okBtn = document.getElementById('confirm-ok-btn');
+            const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+            const cleanup = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                okBtn.onclick = null;
+                cancelBtn.onclick = null;
+            };
+
+            okBtn.onclick = () => {
+                cleanup();
+                onConfirm();
+            };
+            cancelBtn.onclick = cleanup;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // =========================================================================
+        // 5. BACKUP / EXPORT / IMPORT (SHARING ACROSS DEVICES WITHOUT LOGIN)
+        // =========================================================================
+        function openBackupModal() {
+            const modal = document.getElementById('backup-modal');
+            const payload = {
+                version: 2,
+                exportedAt: new Date().toISOString(),
+                students: students,
+                sessions: sessions
+            };
+            document.getElementById('backup-data-textarea').value = JSON.stringify(payload, null, 2);
+            document.getElementById('import-data-textarea').value = '';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeBackupModal() {
+            const modal = document.getElementById('backup-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function copyBackupData() {
+            const textarea = document.getElementById('backup-data-textarea');
+            textarea.select();
+            document.execCommand('copy');
+            showToast('Backup data copied to clipboard!');
+        }
+
+        function downloadBackupFile() {
+            const payload = {
+                version: 2,
+                exportedAt: new Date().toISOString(),
+                students: students,
+                sessions: sessions
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `teacher-john-lawrence-backup-${getTodayISO()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast('Backup JSON file downloaded successfully!');
+        }
+
+        function importBackupData() {
+            const raw = document.getElementById('import-data-textarea').value.trim();
+            if (!raw) {
+                showToast('Please paste valid JSON backup data.', 'error');
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(raw);
+                if (!parsed.students || !parsed.sessions) {
+                    throw new Error('Invalid structure');
+                }
+                students = parsed.students;
+                sessions = parsed.sessions;
+                saveStudents();
+                saveSessions();
+                closeBackupModal();
+                populateAllStudentSelects();
+                renderOverview();
+                renderStudentsTable();
+                showToast('Data successfully imported and synced!');
+            } catch (err) {
+                showToast('Invalid backup JSON format. Please check the code and try again.', 'error');
+            }
+        }
+
+        // =========================================================================
+        // 6. TAB 1: BOOKING LOGIC
+        // =========================================================================
+        function initDateDisplays() {
+            const now = new Date();
+            const fullDateStr = formatFullDate(now);
+            document.getElementById('book-today-display').textContent = fullDateStr;
+            document.getElementById('header-today-badge').textContent = fullDateStr;
+
+            const dateInput = document.getElementById('book-date-input');
+            if (!dateInput.value) {
+                dateInput.value = getTodayISO();
+            }
+        }
+
+        function renderBookingTab() {
+            const select = document.getElementById('book-student-select');
+            const previousValue = select.value;
+
+            select.innerHTML = '';
+            if (students.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'No students available — Add a student first';
+                select.appendChild(opt);
+            } else {
+                students.forEach(stu => {
+                    const curr = Number(stu.currentSession) || 0;
+                    const opt = document.createElement('option');
+                    opt.value = stu.id;
+                    opt.textContent = `${stu.name} — Current: ${getOrdinal(curr)} session (Next: ${getOrdinal(curr + 1)})`;
+                    select.appendChild(opt);
+                });
+                if (previousValue && students.some(s => s.id === previousValue)) {
+                    select.value = previousValue;
+                }
+            }
+
+            updateSessionPreviewBadge();
+            renderRecentBookings();
+        }
+
+        function updateSessionPreviewBadge() {
+            const select = document.getElementById('book-student-select');
+            const student = students.find(s => s.id === select.value);
+
+            const currentEl = document.getElementById('preview-current-session');
+            const nextEl = document.getElementById('preview-next-session');
+            const submitLabel = document.getElementById('book-submit-label');
+
+            if (student) {
+                const curr = Number(student.currentSession) || 0;
+                const next = curr + 1;
+                currentEl.textContent = `Current: ${getOrdinal(curr)} session`;
+                nextEl.textContent = `${getOrdinal(next)} session`;
+                if (submitLabel) {
+                    submitLabel.textContent = `Book Now (+1 Session → ${getOrdinal(next)})`;
+                }
+            } else {
+                currentEl.textContent = 'Current: —';
+                nextEl.textContent = '—';
+                if (submitLabel) {
+                    submitLabel.textContent = 'Book Now (+1 Session)';
+                }
+            }
+        }
+
+        document.querySelectorAll('.hour-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.hour-btn').forEach(b => {
+                    b.classList.remove('active', 'border-2', 'border-indigo-500', 'bg-indigo-500/15', 'text-white', 'font-bold');
+                    b.classList.add('border', 'border-slate-700', 'bg-[#0b1120]', 'text-slate-300', 'font-semibold');
+                    const sub = b.querySelector('span:last-child');
+                    if (sub) {
+                        sub.classList.remove('text-indigo-300', 'font-medium');
+                        sub.classList.add('text-slate-500', 'font-normal');
+                    }
+                });
+                btn.classList.remove('border', 'border-slate-700', 'bg-[#0b1120]', 'text-slate-300', 'font-semibold');
+                btn.classList.add('active', 'border-2', 'border-indigo-500', 'bg-indigo-500/15', 'text-white', 'font-bold');
+                const activeSub = btn.querySelector('span:last-child');
+                if (activeSub) {
+                    activeSub.classList.remove('text-slate-500', 'font-normal');
+                    activeSub.classList.add('text-indigo-300', 'font-medium');
+                }
+                
+                const hours = parseFloat(btn.dataset.hours);
+                document.getElementById('book-hours-input').value = hours;
+                document.getElementById('book-price-input').value = Math.round(hours * 100);
+            });
+        });
+
+        function selectPaymentStatus(status) {
+            document.getElementById('book-status-input').value = status;
+            const paidBtn = document.getElementById('status-btn-paid');
+            const unpaidBtn = document.getElementById('status-btn-unpaid');
+
+            if (status === 'Paid') {
+                paidBtn.className = 'py-3.5 px-4 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 font-bold text-sm flex items-center justify-center gap-2 transition cursor-pointer';
+                paidBtn.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>Paid`;
+
+                unpaidBtn.className = 'py-3.5 px-4 rounded-xl border border-slate-700 bg-[#0b1120] hover:bg-slate-800/80 text-slate-400 font-semibold text-sm flex items-center justify-center gap-2 transition cursor-pointer';
+                unpaidBtn.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>Unpaid`;
+            } else {
+                unpaidBtn.className = 'py-3.5 px-4 rounded-xl border-2 border-rose-500 bg-rose-500/15 text-rose-300 font-bold text-sm flex items-center justify-center gap-2 transition cursor-pointer';
+                unpaidBtn.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>Unpaid`;
+
+                paidBtn.className = 'py-3.5 px-4 rounded-xl border border-slate-700 bg-[#0b1120] hover:bg-slate-800/80 text-slate-400 font-semibold text-sm flex items-center justify-center gap-2 transition cursor-pointer';
+                paidBtn.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>Paid`;
+            }
+        }
+
+        function setQuickPrice(amount) {
+            document.getElementById('book-price-input').value = amount;
+        }
+
+        document.getElementById('book-student-select').addEventListener('change', updateSessionPreviewBadge);
+
+        document.getElementById('booking-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const studentId = document.getElementById('book-student-select').value;
+            const student = students.find(s => s.id === studentId);
+            if (!student) {
+                showToast('Please select or add a student first.', 'error');
+                return;
+            }
+
+            const date = document.getElementById('book-date-input').value || getTodayISO();
+            const hours = parseFloat(document.getElementById('book-hours-input').value) || 1;
+            const status = document.getElementById('book-status-input').value || 'Paid';
+            const price = parseFloat(document.getElementById('book-price-input').value) || 0;
+
+            const newSessionNumber = (Number(student.currentSession) || 0) + 1;
+            student.currentSession = newSessionNumber;
+
+            const newSession = {
+                id: 'ses-' + Date.now(),
+                studentId: student.id,
+                studentName: student.name,
+                date: date,
+                hours: hours,
+                price: price,
+                status: status,
+                sessionNumber: newSessionNumber
+            };
+
+            sessions.push(newSession);
+            saveStudents();
+            saveSessions();
+
+            renderBookingTab();
+            renderOverview();
+            renderStudentsTable();
+            populateAllStudentSelects();
+
+            showToast(`Booked ${student.name} — ${getOrdinal(newSessionNumber)} session (${formatCurrency(price)}, ${status})!`);
+        });
+
+        function renderRecentBookings() {
+            const container = document.getElementById('recent-bookings-list');
+            const recent = [...sessions].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)).slice(0, 5);
+
+            if (recent.length === 0) {
+                container.innerHTML = `<p class="py-4 text-sm text-slate-500 text-center">No sessions recorded yet.</p>`;
+                return;
+            }
+
+            container.innerHTML = recent.map(s => {
+                const statusBadge = s.status === 'Paid'
+                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Paid</span>`
+                    : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/15 border border-rose-500/30 text-rose-400"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Unpaid</span>`;
+
+                return `
+                    <div class="py-3 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="px-2.5 h-9 rounded-xl bg-indigo-500/15 border border-indigo-400/25 text-indigo-300 font-extrabold text-xs flex items-center justify-center shrink-0">
+                                ${getOrdinal(s.sessionNumber)}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-white">${escapeHtml(s.studentName)} <span class="text-xs font-semibold text-indigo-400">(${getOrdinal(s.sessionNumber)} Session)</span></p>
+                                <p class="text-xs text-slate-400">${formatShortSlipDate(s.date)} &bull; ${formatHoursLabel(s.hours)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-extrabold text-white">${formatCurrency(s.price)}</span>
+                            ${statusBadge}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // =========================================================================
+        // 7. TAB 2: OVERVIEW (WEEKLY TABLES & PRINT)
+        // =========================================================================
+        function formatSessionRangeAndTotal(studentSessions) {
+            const nums = [...new Set(studentSessions.map(s => Number(s.sessionNumber)).filter(n => !isNaN(n)))].sort((a, b) => a - b);
+            const count = studentSessions.length;
+            const totalText = `${count} ${count === 1 ? 'session' : 'sessions'} total`;
+
+            if (nums.length === 0) {
+                return { rangeLabel: `${count} ${count === 1 ? 'Session' : 'Sessions'}`, totalText };
+            }
+
+            if (nums.length === 1) {
+                return {
+                    rangeLabel: `${getOrdinal(nums[0])} Session`,
+                    totalText
+                };
+            }
+
+            let isConsecutive = true;
+            for (let i = 1; i < nums.length; i++) {
+                if (nums[i] !== nums[i - 1] + 1) {
+                    isConsecutive = false;
+                    break;
+                }
+            }
+
+            const rangeLabel = isConsecutive
+                ? `${getOrdinal(nums[0])}–${getOrdinal(nums[nums.length - 1])} Session`
+                : `${nums.map(n => getOrdinal(n)).join(', ')} Session`;
+
+            return { rangeLabel, totalText };
+        }
+
+        function renderOverview() {
+            const container = document.getElementById('weekly-tables-container');
+            const filterSelect = document.getElementById('overview-week-filter');
+            const currentFilter = filterSelect.value;
+
+            const weekGroups = {};
+            sessions.forEach(session => {
+                const info = getWeekInfo(session.date);
+                if (!weekGroups[info.key]) {
+                    weekGroups[info.key] = {
+                        key: info.key,
+                        info: info,
+                        sessions: []
+                    };
+                }
+                weekGroups[info.key].sessions.push(session);
+            });
+
+            const sortedWeekKeys = Object.keys(weekGroups).sort((a, b) => b.localeCompare(a));
+
+            filterSelect.innerHTML = `<option value="all">All Weeks (${sortedWeekKeys.length})</option>`;
+            sortedWeekKeys.forEach(key => {
+                const group = weekGroups[key];
+                const title = formatWeekRangeTitle(group.sessions, group.info);
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = title;
+                filterSelect.appendChild(opt);
+            });
+            if (currentFilter && (currentFilter === 'all' || weekGroups[currentFilter])) {
+                filterSelect.value = currentFilter;
+            }
+
+            const keysToRender = filterSelect.value === 'all' ? sortedWeekKeys : [filterSelect.value];
+            let grandPaid = 0;
+            let grandUnpaid = 0;
+
+            keysToRender.forEach(k => {
+                if (!weekGroups[k]) return;
+                weekGroups[k].sessions.forEach(s => {
+                    if (s.status === 'Paid') grandPaid += Number(s.price) || 0;
+                    else grandUnpaid += Number(s.price) || 0;
+                });
+            });
+
+            document.getElementById('overview-total-paid').textContent = formatCurrency(grandPaid);
+            document.getElementById('overview-total-unpaid').textContent = formatCurrency(grandUnpaid);
+            document.getElementById('overview-total-all').textContent = formatCurrency(grandPaid + grandUnpaid);
+
+            if (keysToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-[#111827] rounded-2xl p-10 text-center border border-slate-800 shadow-lg">
+                        <p class="text-slate-400 font-medium">No tutoring sessions recorded yet. Go to the <strong class="text-white">Book</strong> tab to add a class.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = keysToRender.map(key => {
+                const group = weekGroups[key];
+                const weekTitle = formatWeekRangeTitle(group.sessions, group.info);
+                
+                const sortedSessions = [...group.sessions].sort((a, b) => a.date.localeCompare(b.date) || a.sessionNumber - b.sessionNumber || a.id.localeCompare(b.id));
+
+                const studentMap = new Map();
+                sortedSessions.forEach(s => {
+                    const groupKey = (s.studentName || '').trim().toLowerCase();
+                    if (!studentMap.has(groupKey)) {
+                        studentMap.set(groupKey, {
+                            studentName: s.studentName,
+                            studentKey: groupKey,
+                            sessions: []
+                        });
+                    }
+                    studentMap.get(groupKey).sessions.push(s);
+                });
+
+                let weekTotal = 0;
+                let weekPaid = 0;
+                let weekUnpaid = 0;
+                let weekTotalSessionsCount = sortedSessions.length;
+
+                const studentGroups = Array.from(studentMap.values());
+
+                const rowsHtml = studentGroups.map(sg => {
+                    let studentTotalPrice = 0;
+                    let studentPaidPrice = 0;
+                    let studentUnpaidPrice = 0;
+                    let totalHours = 0;
+
+                    sg.sessions.forEach(s => {
+                        const price = Number(s.price) || 0;
+                        studentTotalPrice += price;
+                        totalHours += parseFloat(s.hours) || 0;
+                        if (s.status === 'Paid') studentPaidPrice += price;
+                        else studentUnpaidPrice += price;
+                    });
+
+                    weekTotal += studentTotalPrice;
+                    weekPaid += studentPaidPrice;
+                    weekUnpaid += studentUnpaidPrice;
+
+                    const { rangeLabel, totalText } = formatSessionRangeAndTotal(sg.sessions);
+                    const encodedStudentKey = encodeURIComponent(sg.studentKey);
+
+                    let statusBadge = '';
+                    if (studentUnpaidPrice === 0 && studentPaidPrice > 0) {
+                        statusBadge = `<button type="button" onclick="toggleStudentWeekStatus('${key}', '${encodedStudentKey}')" title="Click to mark all as Unpaid" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition cursor-pointer">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Paid
+                        </button>`;
+                    } else if (studentPaidPrice === 0) {
+                        statusBadge = `<button type="button" onclick="toggleStudentWeekStatus('${key}', '${encodedStudentKey}')" title="Click to mark all as Paid" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/15 border border-rose-500/30 text-rose-400 hover:bg-rose-500/25 transition cursor-pointer">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Unpaid
+                        </button>`;
+                    } else {
+                        statusBadge = `<button type="button" onclick="toggleStudentWeekStatus('${key}', '${encodedStudentKey}')" title="Click to mark all as Paid" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25 transition cursor-pointer">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>Partial (${formatCurrency(studentPaidPrice)} Paid)
+                        </button>`;
+                    }
+
+                    return `
+                        <tr class="hover:bg-slate-800/40 transition">
+                            <td class="py-3.5 px-5 font-bold text-white whitespace-nowrap">
+                                <span class="text-base">${escapeHtml(sg.studentName)}</span>
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="inline-flex items-center text-xs font-extrabold text-indigo-200 bg-[#1a2442] border border-indigo-500/30 px-2.5 py-1 rounded-lg">
+                                        ${rangeLabel}
+                                    </span>
+                                    <span class="inline-flex items-center text-xs font-semibold text-slate-300 bg-slate-800/90 border border-slate-700 px-2.5 py-1 rounded-lg">
+                                        ${totalText} &bull; ${formatHoursLabel(totalHours)}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4 font-extrabold text-white whitespace-nowrap">${formatCurrency(studentTotalPrice)}</td>
+                            <td class="py-3.5 px-4 whitespace-nowrap">${statusBadge}</td>
+                            <td class="no-print py-3.5 px-5 text-right whitespace-nowrap">
+                                <button type="button" onclick="confirmDeleteStudentWeekSessions('${key}', '${encodedStudentKey}')" title="Remove sessions for this week" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/15 transition cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="print-container bg-[#111827] rounded-2xl shadow-lg border border-slate-800 overflow-hidden">
+                        <div class="bg-[#161f38] border-b border-slate-800 text-white px-5 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center gap-2.5">
+                                <svg class="w-5 h-5 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <h3 class="text-base sm:text-lg font-extrabold tracking-tight text-white">${weekTitle}</h3>
+                            </div>
+                            <span class="text-xs font-semibold text-indigo-200 bg-indigo-500/15 border border-indigo-400/20 px-3 py-1 rounded-full self-start sm:self-center">
+                                ${studentGroups.length} ${studentGroups.length === 1 ? 'Student' : 'Students'} &bull; ${weekTotalSessionsCount} ${weekTotalSessionsCount === 1 ? 'Session' : 'Sessions'}
+                            </span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-[#0b1120] border-b border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                                        <th class="py-3 px-5">Student</th>
+                                        <th class="py-3 px-4">Sessions (Range &amp; Total)</th>
+                                        <th class="py-3 px-4">Total Price</th>
+                                        <th class="py-3 px-4">Status</th>
+                                        <th class="no-print py-3 px-5 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/80 text-sm">
+                                    ${rowsHtml}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-[#0d1425] border-t border-slate-800">
+                                        <td colspan="2" class="py-4 px-5">
+                                            <span class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-200">Weekly Total</span>
+                                            <span class="inline-block ml-2 text-xs font-bold text-indigo-300 bg-indigo-500/15 border border-indigo-400/20 px-2 py-0.5 rounded-md">
+                                                ${weekTotalSessionsCount} ${weekTotalSessionsCount === 1 ? 'Session' : 'Sessions'}
+                                            </span>
+                                            <span class="block sm:inline sm:ml-3 text-xs font-medium text-slate-400 mt-1 sm:mt-0">
+                                                (Paid: <strong class="text-emerald-400">${formatCurrency(weekPaid)}</strong> &bull; Unpaid: <strong class="text-rose-400">${formatCurrency(weekUnpaid)}</strong>)
+                                            </span>
+                                        </td>
+                                        <td colspan="3" class="py-4 px-4 text-left">
+                                            <span class="text-lg font-extrabold text-white">${formatCurrency(weekTotal)}</span>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleStudentWeekStatus(weekKey, encodedStudentKey) {
+            const studentKey = decodeURIComponent(encodedStudentKey);
+            const matching = sessions.filter(s => getWeekInfo(s.date).key === weekKey && (s.studentName || '').trim().toLowerCase() === studentKey);
+            if (matching.length === 0) return;
+
+            const allPaid = matching.every(s => s.status === 'Paid');
+            const nextStatus = allPaid ? 'Unpaid' : 'Paid';
+            matching.forEach(s => {
+                s.status = nextStatus;
+            });
+
+            saveSessions();
+            renderOverview();
+            renderRecentBookings();
+            renderIndividualSlip();
+            showToast(`Marked all ${matching[0].studentName}'s sessions for this week as ${nextStatus}.`);
+        }
+
+        function confirmDeleteStudentWeekSessions(weekKey, encodedStudentKey) {
+            const studentKey = decodeURIComponent(encodedStudentKey);
+            const matching = sessions.filter(s => getWeekInfo(s.date).key === weekKey && (s.studentName || '').trim().toLowerCase() === studentKey);
+            if (matching.length === 0) return;
+
+            const displayName = matching[0].studentName;
+            const { rangeLabel, totalText } = formatSessionRangeAndTotal(matching);
+
+            showConfirmModal(
+                'Delete Weekly Student Sessions',
+                `Remove ${displayName}'s ${rangeLabel} (${totalText}) from this week?`,
+                () => {
+                    const removedIds = new Set(matching.map(m => m.id));
+                    const maxRemovedSessionNum = Math.max(...matching.map(m => Number(m.sessionNumber) || 0));
+
+                    const student = students.find(st => (st.name || '').trim().toLowerCase() === studentKey);
+                    if (student && Number(student.currentSession) === maxRemovedSessionNum) {
+                        const remainingForStudent = sessions.filter(s => !removedIds.has(s.id) && (s.studentName || '').trim().toLowerCase() === studentKey);
+                        const fallbackMax = remainingForStudent.length > 0
+                            ? Math.max(...remainingForStudent.map(s => Number(s.sessionNumber) || 0))
+                            : Math.max(0, Number(student.currentSession) - matching.length);
+                        student.currentSession = fallbackMax;
+                        saveStudents();
+                    }
+
+                    sessions = sessions.filter(s => !removedIds.has(s.id));
+                    saveSessions();
+                    renderOverview();
+                    renderRecentBookings();
+                    renderStudentsTable();
+                    populateAllStudentSelects();
+                    showToast(`Removed ${displayName}'s sessions for that week.`);
+                }
+            );
+        }
+
+        // =========================================================================
+        // 8. TAB 3: INDIVIDUAL SLIPS (ATTENDANCE & COPY FORMAT)
+        // =========================================================================
+        function renderIndividualSlip() {
+            const select = document.getElementById('slip-student-select');
+            const rangeSelect = document.getElementById('slip-range-select');
+            const textarea = document.getElementById('slip-preview-textarea');
+            const badge = document.getElementById('slip-session-badge');
+
+            const studentId = select.value;
+            const student = students.find(s => s.id === studentId);
+
+            if (!student) {
+                textarea.value = 'No student selected.';
+                return;
+            }
+
+            badge.textContent = `${student.status || '✅Permanent'} • Current: ${getOrdinal(student.currentSession)} session`;
+
+            let studentSessions = sessions
+                .filter(s => s.studentId === student.id || s.studentName.toLowerCase() === student.name.toLowerCase())
+                .sort((a, b) => a.date.localeCompare(b.date) || a.sessionNumber - b.sessionNumber);
+
+            const mode = rangeSelect.value;
+            if (studentSessions.length > 0) {
+                if (mode === 'latest_single') {
+                    studentSessions = [studentSessions[studentSessions.length - 1]];
+                } else if (mode === 'latest_week') {
+                    const latestSession = studentSessions[studentSessions.length - 1];
+                    const latestWeekKey = getWeekInfo(latestSession.date).key;
+                    studentSessions = studentSessions.filter(s => getWeekInfo(s.date).key === latestWeekKey);
+                }
+            }
+
+            let sessionsBlock = '';
+            if (studentSessions.length === 0) {
+                const todayFormatted = formatShortSlipDate(getTodayISO());
+                sessionsBlock = `${todayFormatted} - ${getOrdinal(student.currentSession)} session/s\n(1hr)`;
+            } else {
+                sessionsBlock = studentSessions.map(s => {
+                    return `${formatShortSlipDate(s.date)} - ${getOrdinal(s.sessionNumber)} session/s\n(${formatHoursLabel(s.hours)})`;
+                }).join('\n\n');
+            }
+
+            const paidSessions = studentSessions.filter(s => s.status === 'Paid');
+            const unpaidSessions = studentSessions.filter(s => s.status === 'Unpaid');
+
+            const totalPaidAmount = paidSessions.reduce((sum, s) => sum + (Number(s.price) || 0), 0);
+            const totalUnpaidAmount = unpaidSessions.reduce((sum, s) => sum + (Number(s.price) || 0), 0);
+
+            let paymentFooterLines = [];
+            if (paidSessions.length > 0) {
+                const latestPaidDate = paidSessions[paidSessions.length - 1].date;
+                paymentFooterLines.push(`Paid: ${totalPaidAmount} as of ${formatMonthDayOnly(latestPaidDate)}`);
+            } else if (studentSessions.length === 0) {
+                paymentFooterLines.push(`Paid: 0 as of ${formatMonthDayOnly(getTodayISO())}`);
+            }
+
+            if (unpaidSessions.length > 0) {
+                paymentFooterLines.push(`Unpaid Balance: ₱${totalUnpaidAmount}`);
+            }
+
+            const formattedSlip = [
+                `Attendance`,
+                ``,
+                `Teacher: John Lawrence `,
+                `Student Name: ${student.name}`,
+                `Status: ${student.status || '✅Permanent'}   `,
+                ``,
+                `Sessions:`,
+                ` -`,
+                sessionsBlock,
+                ``,
+                paymentFooterLines.join('\n')
+            ].join('\n');
+
+            textarea.value = formattedSlip;
+        }
+
+        function copySlipToClipboard() {
+            const textarea = document.getElementById('slip-preview-textarea');
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+
+            let copied = false;
+            try {
+                copied = document.execCommand('copy');
+            } catch (err) {
+                copied = false;
+            }
+
+            if (copied) {
+                const btn = document.getElementById('copy-slip-btn');
+                const btnText = document.getElementById('copy-btn-text');
+                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+                btnText.textContent = 'Copied to Clipboard!';
+
+                showToast('Attendance slip copied! Ready to paste in Messenger or SMS.');
+
+                setTimeout(() => {
+                    btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                    btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                    btnText.textContent = 'Copy to Clipboard';
+                }, 2200);
+            } else {
+                showToast('Unable to copy automatically. Please select the text and copy manually.', 'error');
+            }
+        }
+
+        // =========================================================================
+        // 9. TAB 4: STUDENTS MANAGEMENT
+        // =========================================================================
+        function renderStudentsTable() {
+            const tbody = document.getElementById('students-table-body');
+            const badge = document.getElementById('total-students-badge');
+            badge.textContent = `${students.length} ${students.length === 1 ? 'Student' : 'Students'}`;
+
+            if (students.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-slate-500 font-medium">No students found. Add a student using the form above.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = students.map(stu => {
+                const curr = Number(stu.currentSession) || 0;
+                return `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3.5 px-5 sm:px-6 font-bold text-white text-base">${escapeHtml(stu.name)}</td>
+                        <td class="py-3.5 px-4 text-xs font-semibold text-emerald-400">${escapeHtml(stu.status || '✅Permanent')}</td>
+                        <td class="py-3.5 px-4">
+                            <div class="inline-flex items-center gap-2 bg-[#0b1120] border border-slate-700 rounded-xl p-1">
+                                <button type="button" onclick="adjustStudentSession('${stu.id}', -1)" title="Decrease session count" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm transition cursor-pointer">-</button>
+                                <span class="px-2.5 text-sm font-extrabold text-indigo-300 min-w-[6.5rem] text-center">${getOrdinal(curr)} session</span>
+                                <button type="button" onclick="adjustStudentSession('${stu.id}', 1)" title="Increase session count" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm transition cursor-pointer">+</button>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-5 sm:px-6 text-right">
+                            <button type="button" onclick="confirmDeleteStudent('${stu.id}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 text-xs font-bold transition cursor-pointer">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                <span>Delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('add-student-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById('new-student-name');
+            const sessionsInput = document.getElementById('new-student-sessions');
+
+            const name = nameInput.value.trim();
+            const startingSessions = Math.max(0, parseInt(sessionsInput.value, 10) || 0);
+
+            if (!name) return;
+
+            if (students.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+                showToast(`Student "${name}" is already in your list.`, 'error');
+                return;
+            }
+
+            const newStudent = {
+                id: 'stu-' + Date.now(),
+                name: name,
+                currentSession: startingSessions,
+                status: '✅Permanent'
+            };
+
+            students.push(newStudent);
+            saveStudents();
+
+            nameInput.value = '';
+            sessionsInput.value = '0';
+
+            populateAllStudentSelects();
+            renderStudentsTable();
+            showToast(`Added student "${name}" (Current: ${getOrdinal(startingSessions)} session).`);
+        });
+
+        function adjustStudentSession(studentId, delta) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+            const nextVal = Math.max(0, (Number(student.currentSession) || 0) + delta);
+            student.currentSession = nextVal;
+            saveStudents();
+            populateAllStudentSelects();
+            renderStudentsTable();
+        }
+
+        function confirmDeleteStudent(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+
+            showConfirmModal(
+                'Remove Student',
+                `Are you sure you want to remove "${student.name}" from your student roster? Existing session history in Overview will remain intact.`,
+                () => {
+                    students = students.filter(s => s.id !== studentId);
+                    saveStudents();
+                    populateAllStudentSelects();
+                    renderStudentsTable();
+                    showToast(`Removed ${student.name} from student list.`);
+                }
+            );
+        }
+
+        // =========================================================================
+        // 10. SHARED DROPDOWN SYNC & HELPERS
+        // =========================================================================
+        function populateAllStudentSelects() {
+            renderBookingTab();
+
+            const slipSelect = document.getElementById('slip-student-select');
+            const prevSlipVal = slipSelect.value;
+            slipSelect.innerHTML = '';
+
+            if (students.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'No students available';
+                slipSelect.appendChild(opt);
+            } else {
+                students.forEach(stu => {
+                    const opt = document.createElement('option');
+                    opt.value = stu.id;
+                    opt.textContent = `${stu.name} (${getOrdinal(stu.currentSession)} session)`;
+                    slipSelect.appendChild(opt);
+                });
+                if (prevSlipVal && students.some(s => s.id === prevSlipVal)) {
+                    slipSelect.value = prevSlipVal;
+                } else if (students.some(s => s.name === 'CK')) {
+                    const ck = students.find(s => s.name === 'CK');
+                    slipSelect.value = ck.id;
+                }
+            }
+            renderIndividualSlip();
+        }
+
+        function confirmResetDemoData() {
+            showConfirmModal(
+                'Reset Sample Data',
+                'Restore the default sample students (CK, Darlin, Daniel, James, King) and November 2026 sessions? Current changes will be overwritten.',
+                () => {
+                    students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+                    sessions = JSON.parse(JSON.stringify(DEFAULT_SESSIONS));
+                    saveStudents();
+                    saveSessions();
+                    populateAllStudentSelects();
+                    renderOverview();
+                    renderStudentsTable();
+                    showToast('Sample data restored.');
+                }
+            );
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // =========================================================================
+        // 11. BOOTSTRAP APP
+        // =========================================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            initDateDisplays();
+            populateAllStudentSelects();
+            renderOverview();
+            renderStudentsTable();
+        });
+    </script>
+</body>
+</html>
